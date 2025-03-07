@@ -1,7 +1,3 @@
-from termios import VINTR
-from types import CellType
-from warnings import catch_warnings
-
 import tenseal as ts
 import numpy as np
 
