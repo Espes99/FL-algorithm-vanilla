@@ -53,6 +53,7 @@ global_model = create_model()
 num_rounds = NUM_ROUNDS
 local_epochs = NUM_EPOCHS  # epochs of training on each client per round
 batch_size = BATCH_SIZE
+curr_best_acc, best_round = 0, 0
 # Federated training simulation
 for round_num in range(num_rounds):
     print(f"\n--- Federated Training Round {round_num + 1} ---")
@@ -64,8 +65,12 @@ for round_num in range(num_rounds):
         local_model = create_model()
         local_model.set_weights(global_model.get_weights())
 
+        early_stopping = tf.keras.callbacks.EarlyStopping(
+            monitor='accuracy', patience=5, min_delta=0.005, mode='max'
+        )
+
         # Train the local model
-        local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=batch_size, verbose=0)
+        local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=batch_size, callbacks=[early_stopping], verbose=0)
 
         # Collect the updated weights from this client
         local_weights.append(local_model.get_weights())
@@ -77,6 +82,9 @@ for round_num in range(num_rounds):
 
     # Evaluate the global model on the test data after each round
     loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
+    if acc > curr_best_acc:
+        curr_best_acc, best_round = acc, round_num+1
+        print(f"New Best Accuracy: {curr_best_acc:.4f} at round {best_round}")
     print(f"========= Round {round_num + 1} ==========")
     print(f"--------- Accuracy: {acc:.4f} ---------")
     print(f"--------- LOSS {loss} ---------")
@@ -84,3 +92,4 @@ for round_num in range(num_rounds):
 # Final evaluation of the global model
 loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
 print("\nFinal Test Accuracy:", acc)
+print(f"Final Best Accuracy: {curr_best_acc} in round {best_round}")
