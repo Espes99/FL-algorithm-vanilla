@@ -1,10 +1,9 @@
+import numpy as np
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
-from encryption import create_ckks_context
-from weights_util import encrypt_model_weights, decrypt_model_weights
-
 
 # Load and preprocess the MNIST dataset
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -36,41 +35,21 @@ for i in range(num_clients):
     client_datasets.append((x_train[start:end], y_train[start:end]))
 
 
-# Function to average weights from multiple models (HO - FedAvg)
+# Function to average weights from multiple models (FedAvg)
 def fed_avg(weights_list):
-    avg_weights = []
-    number_of_clients = len(weights_list)
-
-    # Iterate through each layer's encrypted weights
-    for layer_idx in range(len(weights_list[0])):
-        # Get the encrypted weights for this layer from all clients
-        layer_weights = [weights[layer_idx] for weights in weights_list]
-
-        # Start with the first client's weights for this layer
-        sum_weight = layer_weights[0]
-        # someweight = someweight + layer_weights[i]
-        # pyseal
-        # Homomorphic addition of weights from other clients
-        for index in range(1, number_of_clients):
-            sum_weight = sum_weight + layer_weights[index]
-
-        # Scale by 1/number_of_clients to get average using homomorphic multiplication
-        avg_weight = sum_weight * (1.0 / number_of_clients)
-
-        avg_weights.append(avg_weight)
-
+    avg_weights = list()
+    # zip gathers the corresponding weight arrays from each client model
+    for weights in zip(*weights_list):
+        avg_weights.append(np.mean(weights, axis=0))
     return avg_weights
-
 
 
 # Initialize the global model
 global_model = create_model()
-global_weights_encrypted = None
-global_weights_shapes = None
-ckks_context = create_ckks_context()
+
 # Federated training parameters
 num_rounds = 5  # number of communication rounds
-local_epochs = 3  # epochs of training on each client per round
+local_epochs = 1  # epochs of training on each client per round
 
 # Federated training simulation
 for round_num in range(num_rounds):
@@ -79,41 +58,25 @@ for round_num in range(num_rounds):
 
     # Each client trains on its local data
     for client_index, (x_client, y_client) in enumerate(client_datasets):
-        # Create a new local model
+        # Create a new local model and set it to the current global weights
         local_model = create_model()
-
-        if round_num == 0:
-            # In round 0, use plaintext weights
-            local_model.set_weights(global_model.get_weights())
-        else:
-            decrypted_weights = decrypt_model_weights(global_weights_encrypted, global_weights_shapes, ckks_context)
-            local_model.set_weights(decrypted_weights)
+        local_model.set_weights(global_model.get_weights())
 
         # Train the local model
         local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=32, verbose=0)
 
-        client_weights = local_model.get_weights()
-        encrypted_weights, original_shapes = encrypt_model_weights(client_weights, ckks_context)
-        local_weights.append(encrypted_weights)
-
-        global_weights_shapes = original_shapes
-
+        # Collect the updated weights from this client
+        local_weights.append(local_model.get_weights())
         print(f"Client {client_index + 1} done.")
 
     # Average the weights from all clients (FedAvg)
-    global_weights_encrypted = fed_avg(local_weights)
-
-    # For evaluation only: decrypt weights to update the global model
-    decrypted_global_weights = decrypt_model_weights(global_weights_encrypted, global_weights_shapes, ckks_context)
-    global_model.set_weights(decrypted_global_weights)
-
-    # evaluation client
+    new_weights = fed_avg(local_weights)
+    global_model.set_weights(new_weights)
 
     # Evaluate the global model on the test data after each round
     loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
-    print(f"========= Round {round_num + 1} ==========")
-    print(f"--------- Accuracy: {acc:.4f} ---------")
-    print(f"--------- LOSS {loss} ---------")
+    print(f"Round {round_num + 1} Test Accuracy: {acc:.4f}")
+
 # Final evaluation of the global model
 loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
 print("\nFinal Test Accuracy:", acc)
