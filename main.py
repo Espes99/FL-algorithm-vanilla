@@ -3,6 +3,7 @@ from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
 from encryption import create_ckks_context
+from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE
 from weights_util import encrypt_model_weights, decrypt_model_weights
 
 
@@ -27,7 +28,7 @@ def create_model():
 
 
 # Simulate federated clients by splitting the training data
-num_clients = 10
+num_clients = NUM_CLIENTS
 client_data_size = len(x_train) // num_clients
 client_datasets = []
 for i in range(num_clients):
@@ -69,9 +70,9 @@ global_weights_encrypted = None
 global_weights_shapes = None
 ckks_context = create_ckks_context()
 # Federated training parameters
-num_rounds = 5  # number of communication rounds
-local_epochs = 3  # epochs of training on each client per round
-
+num_rounds = NUM_ROUNDS  # number of communication rounds
+local_epochs = NUM_EPOCHS  # epochs of training on each client per round
+batch_size = BATCH_SIZE
 # Federated training simulation
 for round_num in range(num_rounds):
     print(f"\n--- Federated Training Round {round_num + 1} ---")
@@ -90,7 +91,7 @@ for round_num in range(num_rounds):
             local_model.set_weights(decrypted_weights)
 
         # Train the local model
-        local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=32, verbose=0)
+        local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=batch_size, verbose=0)
 
         client_weights = local_model.get_weights()
         encrypted_weights, original_shapes = encrypt_model_weights(client_weights, ckks_context)
