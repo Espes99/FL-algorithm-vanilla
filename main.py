@@ -2,6 +2,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
+import tensorflow as tf
 from encryption import create_ckks_context
 from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE
 from weights_util import encrypt_model_weights, decrypt_model_weights
@@ -90,8 +91,12 @@ for round_num in range(num_rounds):
             decrypted_weights = decrypt_model_weights(global_weights_encrypted, global_weights_shapes, ckks_context)
             local_model.set_weights(decrypted_weights)
 
+        early_stopping = tf.keras.callbacks.EarlyStopping(
+            monitor='accuracy', patience=5, min_delta=0.005, mode='max'
+        )
+
         # Train the local model
-        local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=batch_size, verbose=0)
+        local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=batch_size, callbacks=[early_stopping], verbose=0)
 
         client_weights = local_model.get_weights()
         encrypted_weights, original_shapes = encrypt_model_weights(client_weights, ckks_context)
