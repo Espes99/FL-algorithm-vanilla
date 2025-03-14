@@ -74,6 +74,7 @@ ckks_context = create_ckks_context()
 num_rounds = NUM_ROUNDS  # number of communication rounds
 local_epochs = NUM_EPOCHS  # epochs of training on each client per round
 batch_size = BATCH_SIZE
+curr_best_acc, best_round = 0, 0
 # Federated training simulation
 for round_num in range(num_rounds):
     print(f"\n--- Federated Training Round {round_num + 1} ---")
@@ -117,9 +118,14 @@ for round_num in range(num_rounds):
 
     # Evaluate the global model on the test data after each round
     loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
+    if acc > curr_best_acc:
+        curr_best_acc, best_round = acc, round_num + 1
+        print(f"New Best Accuracy: {curr_best_acc:.4f} at round {best_round}")
     print(f"========= Round {round_num + 1} ==========")
     print(f"--------- Accuracy: {acc:.4f} ---------")
     print(f"--------- LOSS {loss} ---------")
+
 # Final evaluation of the global model
 loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
 print("\nFinal Test Accuracy:", acc)
+print(f"Final Best Accuracy: {curr_best_acc} in round {best_round}")
