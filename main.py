@@ -36,25 +36,26 @@ for i in range(num_clients):
     client_datasets.append((x_train[start:end], y_train[start:end]))
 
 
-# Function to average weights from multiple models (FedAvg)
+# Function to average weights from multiple models (HO - FedAvg)
 def fed_avg(weights_list):
     avg_weights = []
-    num_clients = len(weights_list)
+    number_of_clients = len(weights_list)
 
     # Iterate through each layer's encrypted weights
     for layer_idx in range(len(weights_list[0])):
         # Get the encrypted weights for this layer from all clients
-        layer_weights = [client_weights[layer_idx] for client_weights in weights_list]
+        layer_weights = [weights[layer_idx] for weights in weights_list]
 
         # Start with the first client's weights for this layer
         sum_weight = layer_weights[0]
-
+        # someweight = someweight + layer_weights[i]
+        # pyseal
         # Homomorphic addition of weights from other clients
-        for i in range(1, num_clients):
-            sum_weight += layer_weights[i]
+        for index in range(1, number_of_clients):
+            sum_weight = sum_weight + layer_weights[index]
 
-        # Scale by 1/num_clients to get average using homomorphic multiplication
-        avg_weight = sum_weight * (1.0 / num_clients)
+        # Scale by 1/number_of_clients to get average using homomorphic multiplication
+        avg_weight = sum_weight * (1.0 / number_of_clients)
 
         avg_weights.append(avg_weight)
 
@@ -85,22 +86,17 @@ for round_num in range(num_rounds):
             # In round 0, use plaintext weights
             local_model.set_weights(global_model.get_weights())
         else:
-            # In later rounds, use encrypted weights
-            # Client receives encrypted weights, decrypts them locally for training
             decrypted_weights = decrypt_model_weights(global_weights_encrypted, global_weights_shapes, ckks_context)
             local_model.set_weights(decrypted_weights)
 
         # Train the local model
         local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=32, verbose=0)
 
-        # Encrypt and collect the updated weights from this client
         client_weights = local_model.get_weights()
         encrypted_weights, original_shapes = encrypt_model_weights(client_weights, ckks_context)
         local_weights.append(encrypted_weights)
 
-        # Save shapes from first client (all should have same architecture)
-        if client_index == 0:
-            global_weights_shapes = original_shapes
+        global_weights_shapes = original_shapes
 
         print(f"Client {client_index + 1} done.")
 
@@ -111,10 +107,13 @@ for round_num in range(num_rounds):
     decrypted_global_weights = decrypt_model_weights(global_weights_encrypted, global_weights_shapes, ckks_context)
     global_model.set_weights(decrypted_global_weights)
 
+    # evaluation client
+
     # Evaluate the global model on the test data after each round
     loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
-    print(f"Round {round_num + 1} Test Accuracy: {acc:.4f}")
-
+    print(f"========= Round {round_num + 1} ==========")
+    print(f"--------- Accuracy: {acc:.4f} ---------")
+    print(f"--------- LOSS {loss} ---------")
 # Final evaluation of the global model
 loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
 print("\nFinal Test Accuracy:", acc)
