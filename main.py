@@ -5,6 +5,8 @@ from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
 
+from learning_params import NUM_ROUNDS, NUM_EPOCHS, NUM_CLIENTS, BATCH_SIZE
+
 # Load and preprocess the MNIST dataset
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 x_train = x_train.astype('float32') / 255.0
@@ -26,7 +28,7 @@ def create_model():
 
 
 # Simulate federated clients by splitting the training data
-num_clients = 10
+num_clients = NUM_CLIENTS
 client_data_size = len(x_train) // num_clients
 client_datasets = []
 for i in range(num_clients):
@@ -48,9 +50,9 @@ def fed_avg(weights_list):
 global_model = create_model()
 
 # Federated training parameters
-num_rounds = 5  # number of communication rounds
-local_epochs = 1  # epochs of training on each client per round
-
+num_rounds = NUM_ROUNDS
+local_epochs = NUM_EPOCHS  # epochs of training on each client per round
+batch_size = BATCH_SIZE
 # Federated training simulation
 for round_num in range(num_rounds):
     print(f"\n--- Federated Training Round {round_num + 1} ---")
@@ -63,7 +65,7 @@ for round_num in range(num_rounds):
         local_model.set_weights(global_model.get_weights())
 
         # Train the local model
-        local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=32, verbose=0)
+        local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=batch_size, verbose=0)
 
         # Collect the updated weights from this client
         local_weights.append(local_model.get_weights())
@@ -75,7 +77,9 @@ for round_num in range(num_rounds):
 
     # Evaluate the global model on the test data after each round
     loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
-    print(f"Round {round_num + 1} Test Accuracy: {acc:.4f}")
+    print(f"========= Round {round_num + 1} ==========")
+    print(f"--------- Accuracy: {acc:.4f} ---------")
+    print(f"--------- LOSS {loss} ---------")
 
 # Final evaluation of the global model
 loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
