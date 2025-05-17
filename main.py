@@ -3,9 +3,11 @@ from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
 import tensorflow as tf
+from tensorflow.keras.initializers import RandomUniform
 from encryption import create_ckks_context
 from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE
 from weights_util import encrypt_model_weights, decrypt_model_weights
+from positive_range_constraint import PositiveRangeConstraint
 
 
 # Load and preprocess the MNIST dataset
@@ -18,16 +20,31 @@ y_test = to_categorical(y_test, 10)
 
 
 # Define a simple MLP model for MNIST
+# def create_model():
+#     model = Sequential([
+#         Flatten(input_shape=(28, 28)),
+#         Dense(128, activation='relu'),
+#         Dense(10, activation='softmax')
+#     ])
+#     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+#     return model
+
 def create_model():
     model = Sequential([
         Flatten(input_shape=(28, 28)),
-        Dense(128, activation='relu'),
-        Dense(10, activation='softmax')
+        Dense(128, activation='relu',
+              kernel_constraint=PositiveRangeConstraint(0.0, 1.0),
+              bias_constraint=PositiveRangeConstraint(0.0, 1.0),
+              kernel_initializer=RandomUniform(0.0, 1.0),
+              bias_initializer=RandomUniform(0.0, 1.0)),
+        Dense(10, activation='softmax',
+              kernel_constraint=PositiveRangeConstraint(0.0, 1.0),
+              bias_constraint=PositiveRangeConstraint(0.0, 1.0),
+              kernel_initializer=RandomUniform(0.0, 1.0),
+              bias_initializer=RandomUniform(0.0, 1.0))
     ])
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     return model
-
-
 # Simulate federated clients by splitting the training data
 num_clients = NUM_CLIENTS
 client_data_size = len(x_train) // num_clients
