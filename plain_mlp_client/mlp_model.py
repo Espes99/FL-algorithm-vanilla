@@ -5,6 +5,9 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
 import pandas as pd
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from learning_params import NUM_EPOCHS, BATCH_SIZE
 
 class MLPModel:
     """
@@ -93,6 +96,8 @@ def main():
     dirpath = 'plain_mlp_client/plain_mlp_model'
     csv_path = 'mlp_model_history.csv'
     model_path = "mnist_mlp.h5"
+    model_epochs = NUM_EPOCHS
+    model_batch_size = BATCH_SIZE
     os.makedirs(dirpath, exist_ok=True)
     print("Loading and preprocessing MNIST dataset...")
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -110,8 +115,8 @@ def main():
     print("Training model...")
     history = mlp.train(
         x_train, y_train,
-        epochs=10,
-        batch_size=64,
+        epochs=model_epochs,
+        batch_size=model_batch_size,
         validation_data=(x_test, y_test)
     )
 
