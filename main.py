@@ -5,6 +5,7 @@ import tensorflow as tf
 import os
 import sys
 from encryption import create_ckks_context
+from federated_learning_recorder import FederatedLearningRecorder
 from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE
 from weights_util import encrypt_model_weights, decrypt_model_weights
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -55,6 +56,7 @@ def fed_avg(weights_list):
     return avg_weights
 
 
+fl_recorder = FederatedLearningRecorder(num_clients=NUM_CLIENTS)
 
 # Initialize the global model
 global_model = MLPModel()
@@ -109,6 +111,7 @@ for round_num in range(num_rounds):
 
     # Evaluate the global model on the test data after each round
     loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
+    fl_recorder.add_round_metrics(round_num=round_num+1, loss=loss, accuracy=acc)
     if acc > curr_best_acc:
         curr_best_acc, best_round = acc, round_num + 1
         print(f"New Best Accuracy: {curr_best_acc:.4f} at round {best_round}")
@@ -120,3 +123,4 @@ for round_num in range(num_rounds):
 loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
 print("\nFinal Test Accuracy:", acc)
 print(f"Final Best Accuracy: {curr_best_acc} in round {best_round}")
+fl_recorder.save_fl_run_to_csv()
