@@ -54,6 +54,6 @@ def plot_fl_results(rounds, clients):
 
 
 if __name__ == "__main__":
-    rounds = 25
-    clients = 10
+    rounds = NUM_ROUNDS
+    clients = NUM_CLIENTS
     plot_fl_results(clients=clients, rounds=rounds)
