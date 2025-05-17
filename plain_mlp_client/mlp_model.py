@@ -3,11 +3,13 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
+from tensorflow.keras.initializers import RandomUniform
 import pandas as pd
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from learning_params import NUM_EPOCHS, BATCH_SIZE
+from positive_range_constraint import PositiveRangeConstraint
 
 class MLPModel:
     """
@@ -16,10 +18,33 @@ class MLPModel:
     without federated learning or encryption.
     """
 
-    def __init__(self):
+    def __init__(self, constraint=False):
         """Initialize the MLP model"""
         self.model = self._create_model()
+        if constraint:
+            self.model = self.create_constraint_model()
 
+    def create_constraint_model(self):
+        """
+        Create and return a simple MLP model for MNIST with weight constraints.
+        This model uses the PositiveRangeConstraint to enforce weight constraints
+        on the Dense layers, ranging from the limited range of [0,1].
+        """
+        model = Sequential([
+            Flatten(input_shape=(28, 28)),
+            Dense(128, activation='relu',
+                  kernel_constraint=PositiveRangeConstraint(0.0, 1.0),
+                  bias_constraint=PositiveRangeConstraint(0.0, 1.0),
+                  kernel_initializer=RandomUniform(0.0, 1.0),
+                  bias_initializer=RandomUniform(0.0, 1.0)),
+            Dense(10, activation='softmax',
+                  kernel_constraint=PositiveRangeConstraint(0.0, 1.0),
+                  bias_constraint=PositiveRangeConstraint(0.0, 1.0),
+                  kernel_initializer=RandomUniform(0.0, 1.0),
+                  bias_initializer=RandomUniform(0.0, 1.0))
+        ])
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        return model
     def _create_model(self):
         """Create and return a simple MLP model for MNIST"""
         model = Sequential([
@@ -90,12 +115,15 @@ class MLPModel:
         """Load model from a file"""
         self.model = tf.keras.models.load_model(filepath)
 
-def main():
+def main(constraint=False):
     """Train and evaluate a single MLP model on MNIST dataset"""
     # Load and preprocess the MNIST dataset
     dirpath = 'plain_mlp_client/plain_mlp_model'
     csv_path = 'mlp_model_history.csv'
     model_path = "mnist_mlp.h5"
+    if constraint:
+        csv_path = 'constraint_mlp_model_history.csv'
+        model_path = 'constraint_mlp_model.h5'
     model_epochs = NUM_EPOCHS
     model_batch_size = BATCH_SIZE
     os.makedirs(dirpath, exist_ok=True)
@@ -108,9 +136,8 @@ def main():
     y_test = to_categorical(y_test, 10)
 
     # Create the model
-    print("Creating MLP model...")
-    mlp = MLPModel()
-
+    print(f"Creating MLP model with constraint: {'yes' if constraint else 'no'}...")
+    mlp = MLPModel(constraint)
     # Train the model
     print("Training model...")
     history = mlp.train(
@@ -134,4 +161,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    constraint = True
+    main(constraint)
