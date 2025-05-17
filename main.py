@@ -6,7 +6,7 @@ import os
 import sys
 from encryption import create_ckks_context
 from federated_learning_recorder import FederatedLearningRecorder
-from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE
+from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE, METHODS
 from weights_util import encrypt_model_weights, decrypt_model_weights
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from plain_mlp_client.mlp_model import MLPModel
@@ -56,7 +56,7 @@ def fed_avg(weights_list):
     return avg_weights
 
 
-fl_recorder = FederatedLearningRecorder(num_clients=NUM_CLIENTS)
+fl_recorder = FederatedLearningRecorder(num_clients=NUM_CLIENTS, method=METHODS[1])
 
 # Initialize the global model
 global_model = MLPModel()
