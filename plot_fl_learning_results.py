@@ -54,6 +54,9 @@ def plot_fl_results(rounds, clients, method):
 
 
 if __name__ == "__main__":
+    plain = METHODS[0]
+    ckks = METHODS[1]
+    ho = METHODS[2]
     rounds = NUM_ROUNDS
     clients = NUM_CLIENTS
-    plot_fl_results(method=METHODS[1], clients=clients, rounds=rounds)
+    plot_fl_results(method=plain, clients=clients, rounds=rounds)
