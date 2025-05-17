@@ -9,7 +9,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from learning_params import NUM_EPOCHS, BATCH_SIZE
-from positive_range_constraint import PositiveRangeConstraint
+from .positive_range_constraint import PositiveRangeConstraint
 
 class MLPModel:
     """
@@ -84,7 +84,7 @@ class MLPModel:
             verbose=1
         )
 
-    def evaluate(self, x_test, y_test):
+    def evaluate(self, x_test, y_test, verbose=0):
         """
         Evaluate the model on test data
 
@@ -95,7 +95,7 @@ class MLPModel:
         Returns:
             Tuple of (loss, accuracy)
         """
-        return self.model.evaluate(x_test, y_test, verbose=1)
+        return self.model.evaluate(x_test, y_test, verbose=verbose)
 
     def save_history_to_csv(self, history, csv_filepath):
         """Save training history to a CSV file"""

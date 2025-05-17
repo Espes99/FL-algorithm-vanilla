@@ -3,9 +3,13 @@ from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
 import tensorflow as tf
+import os
+import sys
 from encryption import create_ckks_context
 from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE
 from weights_util import encrypt_model_weights, decrypt_model_weights
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from plain_mlp_client.mlp_model import MLPModel
 
 
 # Load and preprocess the MNIST dataset
@@ -15,18 +19,6 @@ x_test = x_test.astype('float32') / 255.0
 
 y_train = to_categorical(y_train, 10)
 y_test = to_categorical(y_test, 10)
-
-
-# Define a simple MLP model for MNIST
-def create_model():
-    model = Sequential([
-        Flatten(input_shape=(28, 28)),
-        Dense(128, activation='relu'),
-        Dense(10, activation='softmax')
-    ])
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    return model
-
 
 # Simulate federated clients by splitting the training data
 num_clients = NUM_CLIENTS
@@ -66,7 +58,7 @@ def fed_avg(weights_list):
 
 
 # Initialize the global model
-global_model = create_model()
+global_model = MLPModel()
 global_weights_encrypted = None
 global_weights_shapes = None
 ckks_context = create_ckks_context()
@@ -83,23 +75,23 @@ for round_num in range(num_rounds):
     # Each client trains on its local data
     for client_index, (x_client, y_client) in enumerate(client_datasets):
         # Create a new local model
-        local_model = create_model()
+        local_model = MLPModel()
 
         if round_num == 0:
             # In round 0, use plaintext weights
-            local_model.set_weights(global_model.get_weights())
+            local_model.model.set_weights(global_model.model.get_weights())
         else:
             decrypted_weights = decrypt_model_weights(global_weights_encrypted, global_weights_shapes, ckks_context)
-            local_model.set_weights(decrypted_weights)
+            local_model.model.set_weights(decrypted_weights)
 
         early_stopping = tf.keras.callbacks.EarlyStopping(
             monitor='accuracy', patience=5, min_delta=0.005, mode='max'
         )
 
         # Train the local model
-        local_model.fit(x_client, y_client, epochs=local_epochs, batch_size=batch_size, callbacks=[early_stopping], verbose=0)
+        local_model.model.fit(x_client, y_client, epochs=local_epochs, batch_size=batch_size, callbacks=[early_stopping], verbose=0)
 
-        client_weights = local_model.get_weights()
+        client_weights = local_model.model.get_weights()
         encrypted_weights, original_shapes = encrypt_model_weights(client_weights, ckks_context)
         local_weights.append(encrypted_weights)
 
@@ -112,7 +104,7 @@ for round_num in range(num_rounds):
 
     # For evaluation only: decrypt weights to update the global model
     decrypted_global_weights = decrypt_model_weights(global_weights_encrypted, global_weights_shapes, ckks_context)
-    global_model.set_weights(decrypted_global_weights)
+    global_model.model.set_weights(decrypted_global_weights)
 
     # evaluation client
 
