@@ -1,0 +1,58 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import argparse
+import os
+
+def plot_history(csv_path, output_dir, loss_fname, acc_fname=None):
+    df = pd.read_csv(csv_path)
+    epochs = df.index + 1
+    os.makedirs(output_dir, exist_ok=True)
+
+    # --- Loss ---
+    plt.figure(figsize=(8, 5))
+    plt.plot(epochs, df['loss'], label='Training Loss')
+    if 'val_loss' in df.columns:
+        plt.plot(epochs, df['val_loss'], label='Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss over Epochs')
+    plt.legend()
+    plt.grid(True)
+    loss_path = os.path.join(output_dir, loss_fname)
+    plt.savefig(loss_path)
+    print(f"Saved loss plot to {loss_path}")
+    plt.close()
+
+    # --- Accuracy ---
+    if acc_fname and 'accuracy' in df.columns:
+        plt.figure(figsize=(8, 5))
+        plt.plot(epochs, df['accuracy'], label='Training Accuracy')
+        if 'val_accuracy' in df.columns:
+            plt.plot(epochs, df['val_accuracy'], label='Validation Accuracy')
+        plt.xlabel('Epoch')
+        plt.ylabel('Accuracy')
+        plt.title('Accuracy over Epochs')
+        plt.legend()
+        plt.grid(True)
+        acc_path = os.path.join(output_dir, acc_fname)
+        plt.savefig(acc_path)
+        print(f"Saved accuracy plot to {acc_path}")
+        plt.close()
+
+def main(constrainted_model=False):
+    base_dir = 'plain_mlp_client/plain_mlp_model'
+    if constrainted_model:
+        csv_file       = 'constraint_mlp_model_history.csv'
+        loss_output    = 'mlp_model_loss_plot_constraint.png'
+        acc_output     = 'mlp_model_accuracy_plot_constraint.png'
+    else:
+        csv_file       = 'mlp_model_history.csv'
+        loss_output    = 'mlp_model_loss_plot.png'
+        acc_output     = 'mlp_model_accuracy_plot.png'
+
+    csv_path = os.path.join(base_dir, csv_file)
+    plot_history(csv_path, base_dir, loss_output, acc_output)
+
+if __name__ == '__main__':
+    constraint_model = True
+    main(constraint_model)
