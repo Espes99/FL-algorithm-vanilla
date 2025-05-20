@@ -57,6 +57,8 @@ if __name__ == "__main__":
     plain = METHODS[0]
     ckks = METHODS[1]
     ho = METHODS[2]
-    rounds = NUM_ROUNDS
-    clients = NUM_CLIENTS
-    plot_fl_results(method=plain, clients=clients, rounds=rounds)
+    rounds = [2, 5, 10, 15, 20, 25]
+    clients = [2, 5, 10, 15, 20, 25]
+    # for round in rounds:
+    #     for num_clients in clients:
+    #         plot_fl_results(method=plain, clients=num_clients, rounds=round)
