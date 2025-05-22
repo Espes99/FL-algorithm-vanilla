@@ -2,10 +2,10 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from learning_params import NUM_ROUNDS, NUM_CLIENTS, METHODS
+from learning_params import NUM_ROUNDS, NUM_CLIENTS, METHODS, CONSTRAINED
 
 
-def plot_fl_results(rounds, clients, method):
+def plot_fl_results(rounds, clients, method, constraint=False):
     """
     Plot federated learning results from a CSV file.
 
@@ -16,6 +16,8 @@ def plot_fl_results(rounds, clients, method):
         acc_fname: Filename for the accuracy plot
     """
     base_dir = 'federated_learning_results'
+    if constraint:
+        base_dir = 'federated_learning_results/constrained'
     result_dir = os.path.join(base_dir, method, f"{rounds}-rounds", f"{clients}-clients")
     csv_path = os.path.join(result_dir, f"fl_run_metrics_num_clients-{clients}.csv")
 
@@ -59,6 +61,6 @@ if __name__ == "__main__":
     ho = METHODS[2]
     rounds = [2, 5, 10, 15, 20, 25]
     clients = [2, 5, 10, 15, 20, 25]
-    # for round in rounds:
-    #     for num_clients in clients:
-    #         plot_fl_results(method=plain, clients=num_clients, rounds=round)
+    for round in rounds:
+         for num_clients in clients:
+             plot_fl_results(method=ckks, clients=num_clients, rounds=round, constraint=CONSTRAINED)
