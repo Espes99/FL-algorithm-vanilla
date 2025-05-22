@@ -7,11 +7,13 @@ from learning_params import NUM_ROUNDS, NUM_CLIENTS, METHODS
 
 class FederatedLearningRecorder:
 
-    def __init__(self, num_clients=NUM_CLIENTS, num_rounds=NUM_ROUNDS, method=METHODS[1]):
+    def __init__(self, num_clients=NUM_CLIENTS, constraint=False, num_rounds=NUM_ROUNDS, method=METHODS[1]):
         """
         Initialize the recorder with a base directory for saving results.
         """
         self.base_dir = 'federated_learning_results'+f'/{method}'
+        if constraint:
+            self.base_dir = 'federated_learning_results'+f'/constrained'+f'/{method}'
         os.makedirs(self.base_dir, exist_ok=True)
         self.rounds = []
         self.losses = []

@@ -5,7 +5,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.datasets import mnist
 
 from federated_learning_recorder import FederatedLearningRecorder
-from learning_params import NUM_ROUNDS, NUM_EPOCHS, NUM_CLIENTS, BATCH_SIZE, METHODS
+from learning_params import NUM_ROUNDS, NUM_EPOCHS, NUM_CLIENTS, BATCH_SIZE, METHODS, CONSTRAINED
 from plain_mlp_client.mlp_model import MLPModel
 
 # Load and preprocess the MNIST dataset
@@ -34,10 +34,10 @@ def fed_avg(weights_list):
         avg_weights.append(np.mean(weights, axis=0))
     return avg_weights
 
-fl_recorder = FederatedLearningRecorder(num_clients=NUM_CLIENTS, method=METHODS[0])
+fl_recorder = FederatedLearningRecorder(num_clients=NUM_CLIENTS, method=METHODS[0], constraint=CONSTRAINED)
 
 # Initialize the global model
-global_model = MLPModel()
+global_model = MLPModel(constraint=CONSTRAINED)
 
 # Federated training parameters
 num_rounds = NUM_ROUNDS
@@ -52,7 +52,7 @@ for round_num in range(num_rounds):
     # Each client trains on its local data
     for client_index, (x_client, y_client) in enumerate(client_datasets):
         # Create a new local model and set it to the current global weights
-        local_model = MLPModel()
+        local_model = MLPModel(constraint=CONSTRAINED)
         local_model.model.set_weights(global_model.model.get_weights())
 
         early_stopping = tf.keras.callbacks.EarlyStopping(

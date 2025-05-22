@@ -13,7 +13,7 @@ NUM_ROUNDS = $round
 NUM_EPOCHS = 10
 BATCH_SIZE = 64
 NUM_CLIENTS = $client
-
+CONSTRAINED = True
 METHODS = ["PLAIN", "CKKS", "ABHO"]
 EOF
 
@@ -30,4 +30,4 @@ done
 # Restore the original learning_params.py
 mv learning_params.py.bak learning_params.py
 
-echo "All runs and plots completed!"
+echo "All runs completed!"

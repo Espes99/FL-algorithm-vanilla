@@ -6,7 +6,7 @@ import os
 import sys
 from encryption import create_ckks_context
 from federated_learning_recorder import FederatedLearningRecorder
-from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE, METHODS
+from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE, METHODS, CONSTRAINED
 from weights_util import encrypt_model_weights, decrypt_model_weights
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from plain_mlp_client.mlp_model import MLPModel
@@ -56,10 +56,10 @@ def fed_avg(weights_list):
     return avg_weights
 
 
-fl_recorder = FederatedLearningRecorder(num_clients=NUM_CLIENTS, method=METHODS[1])
+fl_recorder = FederatedLearningRecorder(num_clients=NUM_CLIENTS, method=METHODS[1], constraint=CONSTRAINED)
 
 # Initialize the global model
-global_model = MLPModel()
+global_model = MLPModel(constraint=CONSTRAINED)
 global_weights_encrypted = None
 global_weights_shapes = None
 ckks_context = create_ckks_context()
@@ -76,7 +76,7 @@ for round_num in range(num_rounds):
     # Each client trains on its local data
     for client_index, (x_client, y_client) in enumerate(client_datasets):
         # Create a new local model
-        local_model = MLPModel()
+        local_model = MLPModel(constraint=CONSTRAINED)
 
         if round_num == 0:
             # In round 0, use plaintext weights
