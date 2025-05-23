@@ -82,6 +82,7 @@ for i in range(NUM_CLIENTS):
 #     axs[i].set_xlabel("Digit")
 #     axs[i].set_ylabel("Count")
 # plt.tight_layout()
+# plt.savefig(os.path.join('data-plots', 'client_data_distribution.png'))
 # #plt.show()
 
 # Function to average weights from multiple models (HO - FedAvg)
