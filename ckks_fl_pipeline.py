@@ -7,11 +7,14 @@ import sys
 from encryption import create_ckks_context
 from federated_learning_recorder import FederatedLearningRecorder
 from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE, METHODS, CONSTRAINED
+from seed_config import set_all_seeds
 from weights_util import encrypt_model_weights, decrypt_model_weights
 import numpy as np
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from plain_mlp_client.mlp_model import MLPModel
 
+#Set global seed for reproducibility
+set_all_seeds()
 
 # Load and preprocess the MNIST dataset
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -27,7 +30,7 @@ y_test = to_categorical(y_test, 10)
 
 # Simulate federated clients by splitting the training data
 # HO Dirichlet concentration
-alpha = 10.0
+alpha = 1.0
 digit_indices = {i: np.where(y_train_int == i)[0] for i in range(10)}
 client_indices = {i: [] for i in range(NUM_CLIENTS)}
 

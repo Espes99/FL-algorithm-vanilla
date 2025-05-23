@@ -6,11 +6,14 @@ import tensorflow as tf
 from federated_learning_recorder import FederatedLearningRecorder
 from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE, CONSTRAINED, METHODS
 from plain_mlp_client.mlp_model import MLPModel
+from seed_config import set_all_seeds
 from weights_util import encrypt_model_weights_ho, decrypt_model_weights_ho, add_encrypted_weights_ho, apply_masking_ho
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+#Set global seed for reproducibility
+set_all_seeds()
 # Load and preprocess the MNIST dataset
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 x_train = x_train.astype('float32') / 255.0
