@@ -1,8 +1,7 @@
 cp learning_params.py learning_params.py.bak
 
-rounds=(2 5 10 15 20 25)
-clients=(2 5 10 15 20 25)
-
+rounds=(2 5 10 15 20 25 50 100)
+clients=(2)
 for round in "${rounds[@]}"; do
   for client in "${clients[@]}"; do
     echo "Running CKKS simulation with $round rounds and $client clients"
@@ -15,6 +14,7 @@ BATCH_SIZE = 64
 NUM_CLIENTS = $client
 CONSTRAINED = True
 METHODS = ["PLAIN", "CKKS", "ABHO"]
+SCALE = 100_000
 EOF
 
     python ckks_fl_pipeline.py

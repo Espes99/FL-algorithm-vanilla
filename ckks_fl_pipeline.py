@@ -8,6 +8,7 @@ from encryption import create_ckks_context
 from federated_learning_recorder import FederatedLearningRecorder
 from learning_params import NUM_CLIENTS, NUM_ROUNDS, NUM_EPOCHS, BATCH_SIZE, METHODS, CONSTRAINED
 from weights_util import encrypt_model_weights, decrypt_model_weights
+import numpy as np
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from plain_mlp_client.mlp_model import MLPModel
 
@@ -17,18 +18,43 @@ from plain_mlp_client.mlp_model import MLPModel
 x_train = x_train.astype('float32') / 255.0
 x_test = x_test.astype('float32') / 255.0
 
-y_train = to_categorical(y_train, 10)
+#Keep original integer labels for dirichlet sampling
+y_train_int = y_train.copy()
+y_test_int = y_test.copy()
+
+# y_train = to_categorical(y_train, 10)
 y_test = to_categorical(y_test, 10)
 
 # Simulate federated clients by splitting the training data
-num_clients = NUM_CLIENTS
-client_data_size = len(x_train) // num_clients
-client_datasets = []
-for i in range(num_clients):
-    start = i * client_data_size
-    end = start + client_data_size
-    client_datasets.append((x_train[start:end], y_train[start:end]))
+# HO Dirichlet concentration
+alpha = 10.0
+digit_indices = {i: np.where(y_train_int == i)[0] for i in range(10)}
+client_indices = {i: [] for i in range(NUM_CLIENTS)}
 
+for digit, idxs in digit_indices.items():
+    # shuffle
+    np.random.shuffle(idxs)
+    # sample proportions for each client
+    proportions = np.random.dirichlet(alpha=np.repeat(alpha, NUM_CLIENTS))
+    # compute split sizes
+    counts = (proportions * len(idxs)).astype(int)
+    # adjust to ensure sum equals
+    counts[-1] = len(idxs) - sum(counts[:-1])
+    start = 0
+    for client_id, count in enumerate(counts):
+        client_indices[client_id].extend(idxs[start:start + count])
+        start += count
+
+client_datasets = []
+client_labels_int = []  # Keep for plotting
+for i in range(NUM_CLIENTS):
+    idx = client_indices[i]
+    x_client = x_train[idx]
+    y_client_int = y_train_int[idx]
+    y_client_onehot = to_categorical(y_client_int, 10)
+
+    client_datasets.append((x_client, y_client_onehot))
+    client_labels_int.append(y_client_int)
 
 # Function to average weights from multiple models (HO - FedAvg)
 def fed_avg(weights_list):

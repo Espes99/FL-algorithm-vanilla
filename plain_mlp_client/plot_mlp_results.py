@@ -1,7 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import argparse
 import os
+
+from learning_params import CONSTRAINED
+
 
 def plot_history(csv_path, output_dir, loss_fname, acc_fname=None):
     df = pd.read_csv(csv_path)
@@ -39,7 +41,7 @@ def plot_history(csv_path, output_dir, loss_fname, acc_fname=None):
         print(f"Saved accuracy plot to {acc_path}")
         plt.close()
 
-def main(constrainted_model=False):
+def main(constrainted_model):
     base_dir = 'plain_mlp_client/plain_mlp_model'
     if constrainted_model:
         csv_file       = 'constraint_mlp_model_history.csv'
@@ -54,5 +56,4 @@ def main(constrainted_model=False):
     plot_history(csv_path, base_dir, loss_output, acc_output)
 
 if __name__ == '__main__':
-    constraint_model = True
-    main(constraint_model)
+    main(CONSTRAINED)
