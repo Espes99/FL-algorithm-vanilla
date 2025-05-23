@@ -8,7 +8,8 @@ import pandas as pd
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from learning_params import NUM_EPOCHS, BATCH_SIZE
+from learning_params import NUM_EPOCHS, BATCH_SIZE, CONSTRAINED
+from seed_config import set_all_seeds
 from .positive_range_constraint import PositiveRangeConstraint
 
 class MLPModel:
@@ -117,13 +118,14 @@ class MLPModel:
 
 def main(constraint=False):
     """Train and evaluate a single MLP model on MNIST dataset"""
+    set_all_seeds()
     # Load and preprocess the MNIST dataset
-    dirpath = 'plain_mlp_client/plain_mlp_model'
+    dirpath = 'plain_mlp_model'
     csv_path = 'mlp_model_history.csv'
-    model_path = "mnist_mlp.h5"
+    model_path = "mnist_mlp.keras"
     if constraint:
         csv_path = 'constraint_mlp_model_history.csv'
-        model_path = 'constraint_mlp_model.h5'
+        model_path = 'constraint_mlp_model.keras'
     model_epochs = NUM_EPOCHS
     model_batch_size = BATCH_SIZE
     os.makedirs(dirpath, exist_ok=True)
@@ -161,5 +163,4 @@ def main(constraint=False):
 
 
 if __name__ == "__main__":
-    constraint = True
-    main(constraint)
+    main(CONSTRAINED)
