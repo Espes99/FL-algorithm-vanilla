@@ -9,7 +9,7 @@ for round in "${rounds[@]}"; do
 
     cat > learning_params.py << EOF
 
-GLOBAL_SEED = 42
+GLOBAL_SEED = 142
 NUM_ROUNDS = $round
 NUM_EPOCHS = 10
 BATCH_SIZE = 64

@@ -116,7 +116,7 @@ class MLPModel:
         """Load model from a file"""
         self.model = tf.keras.models.load_model(filepath)
 
-def main(constraint=False):
+def local_client_training_eval(constraint=False):
     """Train and evaluate a single MLP model on MNIST dataset"""
     set_all_seeds()
     # Load and preprocess the MNIST dataset
@@ -163,4 +163,4 @@ def main(constraint=False):
 
 
 if __name__ == "__main__":
-    main(CONSTRAINED)
+    local_client_training_eval(CONSTRAINED)
