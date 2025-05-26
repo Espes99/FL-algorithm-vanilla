@@ -20,9 +20,11 @@ EOF
 
     python ckks_fl_pipeline.py
 
-    # If the run was unsuccessful, report and continue, 0 success
+    # If the run was unsuccessful, report and exit, 0 success
     if [ $? -ne 0 ]; then
-    echo "Error running ckks_fl_pipeline.py with $round rounds and $client clients"
+    echo "Error running plain_fl_pipeline.py with $round rounds and $client clients"
+    mv learning_params.py.bak learning_params.py
+    exit 1
     fi
   done
 done
