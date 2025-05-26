@@ -104,7 +104,6 @@ global_keys = generate_keys_for_model(global_model.model.get_weights())
 
 # Store local models to preserve their weights for masking
 local_models = [MLPModel(constraint=CONSTRAINED) for _ in range(NUM_CLIENTS)]
-
 # Federated training parameters
 num_rounds = NUM_ROUNDS  # number of communication rounds
 local_epochs = NUM_EPOCHS  # epochs of training on each client per round
@@ -159,12 +158,13 @@ for round_num in range(num_rounds):
 
     # Apply masking to filter out noise from HO operations
     print(f"\n[MASKING] Round {round_num + 1}")
-    masked_client_weights = apply_masking_ho(
+    masked_client_weights, round_rejected_stats = apply_masking_ho(
         old_local_weights,
         avg_weights,
         round_num,
         num_rounds,
     )
+    fl_recorder.rejected_stats.append(round_rejected_stats)
     # Update each client's model with their masked weights
     for client_index in range(NUM_CLIENTS):
         local_models[client_index].model.set_weights(masked_client_weights[client_index])
@@ -190,3 +190,4 @@ loss, acc = global_model.evaluate(x_test, y_test, verbose=0)
 print("\nFinal Test Accuracy (Global):", acc)
 print(f"Final Best Accuracy: {curr_best_acc} in round {best_round}")
 fl_recorder.save_fl_run_to_csv()
+fl_recorder.save_rejected_to_csv()

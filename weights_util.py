@@ -3,7 +3,6 @@ import os
 import tensorflow as tf
 from encryption import encrypt_vector, load_CKKSVector_from_buffer, decrypt_vector
 from learning_params import SCALE
-
 def encrypt_model_weights(weights, ckks_context):
     encrypted_weights = []
     original_shape = []
@@ -138,6 +137,7 @@ def apply_masking_ho(old_client_weights, new_global_weights, round_num, total_ro
     print(f'\n[MASKING] Round {round_num + 1}: threshold = {thr:.4f}')
 
     masked_weights = []
+    rejection_stats = []
     overall_total = 0
     overall_kept_old = 0
 
@@ -146,7 +146,7 @@ def apply_masking_ho(old_client_weights, new_global_weights, round_num, total_ro
         filtered_weights = []
         client_kept_old = 0
         client_total = 0
-
+        client_rejected = 0
         print(f'\n-- Client {client_idx + 1} Masking --')
 
         # Process each layer
@@ -160,10 +160,9 @@ def apply_masking_ho(old_client_weights, new_global_weights, round_num, total_ro
             # Count statistics
             num_accepted = np.sum(mask)  # Updates we accept
             num_rejected = np.sum(~mask)  # Updates we reject (keep old)
-
+            client_rejected += num_rejected
             client_kept_old += num_rejected
             client_total += w_old.size
-
             print(f"  Layer {layer_idx + 1}: accepting {num_accepted}/{w_old.size} "
                   f"updates ({100 * num_accepted / w_old.size:.1f}%), "
                   f"rejecting {num_rejected}")
@@ -184,11 +183,20 @@ def apply_masking_ho(old_client_weights, new_global_weights, round_num, total_ro
         masked_weights.append(filtered_weights)
         overall_kept_old += client_kept_old
         overall_total += client_total
-
+        percentage_rejected = (client_rejected / client_total) * 100 if client_total > 0 else 0.0
         print(f"  Client {client_idx + 1} summary: rejected {client_kept_old}/{client_total} "
               f"updates ({100 * client_kept_old / client_total:.1f}% kept old)")
+
+        rejection_stats.append({
+            'round': round_num + 1,
+            'client': client_idx + 1,
+            'total_weights': client_total,
+            'rejected_weights': client_rejected,
+            'rejection_percentage': percentage_rejected,
+            'threshold': thr
+        })
 
     print(f"\n[MASKING] Overall summary: rejected {overall_kept_old}/{overall_total} "
           f"updates ({100 * overall_kept_old / overall_total:.1f}%\n")
 
-    return masked_weights
+    return masked_weights, rejection_stats
