@@ -16,8 +16,7 @@ logging.getLogger('tensorflow').setLevel(logging.ERROR)
 N_BITS      = 32
 N_ROUNDS    = 1000000000   # HO training iterations
 BATCH_SIZE  = 4096*16
-MODEL_DIR   = 'models'
-RESULTS_DIR = 'training_results'
+MODEL_DIR   = 'training_networks/models'
 ALICE_MODEL = os.path.join(MODEL_DIR, 'Alice_best_100.keras')
 BOB_MODEL   = os.path.join(MODEL_DIR, 'Bob_best_100.keras')
 

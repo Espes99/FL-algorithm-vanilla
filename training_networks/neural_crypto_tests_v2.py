@@ -11,7 +11,7 @@ import matplotlib.ticker as mtick
 N_BITS      = 32
 N_ROUNDS    = 50000000   # HO training iterations
 BATCH_SIZE  = 1024
-MODEL_DIR   = 'models'
+MODEL_DIR   = 'training_networks/models'
 ALICE_MODEL = os.path.join(MODEL_DIR, 'Alice_best_100.keras')
 BOB_MODEL   = os.path.join(MODEL_DIR, 'Bob_best_100.keras')
 EVE_MODEL = os.path.join(MODEL_DIR, 'Eve_best_100.keras')
@@ -144,7 +144,7 @@ plt.legend(fontsize=FONT_SIZE)
 plt.grid(True)
 
 # Save the figure
-plt.savefig('eve_error_histogram.png', dpi=300, bbox_inches='tight')
+plt.savefig('training_networks/eve_error_histogram.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 p50 = np.percentile(errors, 50)
@@ -165,5 +165,5 @@ plt.ylabel('Frequency', fontsize=FONT_SIZE)
 plt.tick_params(axis='both', which='major', labelsize=FONT_SIZE-2)
 plt.legend(fontsize=FONT_SIZE)
 plt.grid(True)
-plt.savefig('ho_error_histogram.png', dpi=300, bbox_inches='tight')
+plt.savefig('training_networks/ho_error_histogram.png', dpi=300, bbox_inches='tight')
 plt.show()

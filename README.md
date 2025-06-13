@@ -63,6 +63,8 @@ The project implements and compares three federated learning approaches:
 ```
 
 ## Installation
+**Prerequisites**:
+- Python 3.11
 1. Clone repository:
 ```bash
 git clone https://github.com/Espes99/Neural-Homomorphic-Operation-System

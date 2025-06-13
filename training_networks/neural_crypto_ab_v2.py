@@ -3,9 +3,11 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 from tqdm import tqdm
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from learning_params import SCALE
-os.makedirs('models', exist_ok=True)
-os.makedirs('results', exist_ok=True)
+os.makedirs('training_networks/models', exist_ok=True)
+os.makedirs('training_networks/results', exist_ok=True)
 # -----------------------------
 # Configuration
 # -----------------------------
@@ -154,9 +156,9 @@ for step in tqdm(range(N_ROUNDS), desc='Training AB+EVE'):
     loss_history_eve.append(loss_e.numpy())
 
     if loss_ab < best_loss:
-        Alice.save('models/Alice_best.keras')
-        Bob.save('models/Bob_best.keras')
-        Eve.save('models/Eve_best.keras')
+        Alice.save('training_networks/models/Alice_best.keras')
+        Bob.save('training_networks/models/Bob_best.keras')
+        Eve.save('training_networks/models/Eve_best.keras')
         best_loss = loss_ab
         best_loss_iteration = step + 1
         # print all the loss values
@@ -169,9 +171,9 @@ for step in tqdm(range(N_ROUNDS), desc='Training AB+EVE'):
     if (step + 1) - best_loss_iteration > PATIENCE:
         print(f"No improvement for {PATIENCE} rounds. Stopping at step {step+1}.")
         # load the best models
-        Alice.load_weights('models/Alice_best.keras')
-        Bob.load_weights('models/Bob_best.keras')
-        Eve.load_weights('models/Eve_best.keras')
+        Alice.load_weights('training_networks/models/Alice_best.keras')
+        Bob.load_weights('training_networks/models/Bob_best.keras')
+        Eve.load_weights('training_networks/models/Eve_best.keras')
         print(f"Best loss: {best_loss:.4f} at step {best_loss_iteration}")
         break
 
