@@ -31,11 +31,11 @@ def plot_fl_results(rounds, clients, method, constraint=False):
     plots_dir = result_dir  # Using the same directory for simplicity
     os.makedirs(plots_dir, exist_ok=True)
     # Plot loss
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 7))
     plt.plot(df['round'], df['loss'], marker='o')
-    plt.xlabel('Round')
-    plt.ylabel('Loss')
-    plt.title(f'Global Loss over Rounds (Clients: {num_clients})')
+    plt.xlabel('Round', fontsize=24)
+    plt.ylabel('Loss', fontsize=24)
+    plt.tick_params(axis='both', which='major', labelsize=20)
     plt.grid(True)
     loss_path = os.path.join(result_dir, loss_fname)
     plt.savefig(loss_path)
@@ -43,11 +43,11 @@ def plot_fl_results(rounds, clients, method, constraint=False):
     plt.close()
 
     # Plot accuracy
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 7))
     plt.plot(df['round'], df['accuracy'], marker='o', color='green')
-    plt.xlabel('Round')
-    plt.ylabel('Accuracy')
-    plt.title(f'NUM ROUNDS - {rounds} - Global Model Accuracy (Clients: {num_clients})')
+    plt.xlabel('Round', fontsize=24)
+    plt.ylabel('Accuracy', fontsize=24)
+    plt.tick_params(axis='both', which='major', labelsize=20)
     plt.grid(True)
     acc_path = os.path.join(plots_dir, acc_fname)
     plt.savefig(acc_path)
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     ckks = METHODS[1]
     ho = METHODS[2]
     rounds = [2,5,10,15,20,25,50,100]
-    clients = [2]
+    clients = [3]
     for method in METHODS:
         for round in rounds:
             for num_clients in clients:

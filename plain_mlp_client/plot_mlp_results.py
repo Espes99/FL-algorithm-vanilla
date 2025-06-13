@@ -12,14 +12,14 @@ def plot_history(csv_path, output_dir, loss_fname, acc_fname=None):
     os.makedirs(output_dir, exist_ok=True)
 
     # --- Loss ---
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(10, 7))
     plt.plot(epochs, df['loss'], label='Training Loss')
     if 'val_loss' in df.columns:
         plt.plot(epochs, df['val_loss'], label='Validation Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Loss over Epochs')
-    plt.legend()
+    plt.xlabel('Epoch', fontsize=24)
+    plt.ylabel('Loss', fontsize=24)
+    plt.tick_params(axis='both', which='major', labelsize=20)
+    plt.legend(fontsize=24)
     plt.grid(True)
     loss_path = os.path.join(output_dir, loss_fname)
     plt.savefig(loss_path)
@@ -28,14 +28,14 @@ def plot_history(csv_path, output_dir, loss_fname, acc_fname=None):
 
     # --- Accuracy ---
     if acc_fname and 'accuracy' in df.columns:
-        plt.figure(figsize=(8, 5))
+        plt.figure(figsize=(10, 7))
         plt.plot(epochs, df['accuracy'], label='Training Accuracy')
         if 'val_accuracy' in df.columns:
             plt.plot(epochs, df['val_accuracy'], label='Validation Accuracy')
-        plt.xlabel('Epoch')
-        plt.ylabel('Accuracy')
-        plt.title('Accuracy over Epochs')
-        plt.legend()
+        plt.xlabel('Epoch', fontsize=24)
+        plt.ylabel('Accuracy', fontsize=24)
+        plt.tick_params(axis='both', which='major', labelsize=20)
+        plt.legend(fontsize=24)
         plt.grid(True)
         acc_path = os.path.join(output_dir, acc_fname)
         plt.savefig(acc_path)
