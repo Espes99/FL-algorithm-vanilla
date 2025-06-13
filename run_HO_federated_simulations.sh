@@ -14,7 +14,7 @@ NUM_ROUNDS = $round
 NUM_EPOCHS = 10
 BATCH_SIZE = 64
 NUM_CLIENTS = $client
-CONSTRAINED = True
+CONSTRAINED = False
 METHODS = ["PLAIN", "CKKS", "ABHO"]
 SCALE = 100_000
 EOF
@@ -23,7 +23,7 @@ EOF
 
     # If the run was unsuccessful, report and exit, 0 success
     if [ $? -ne 0 ]; then
-    echo "Error running plain_fl_pipeline.py with $round rounds and $client clients"
+    echo "Error running ho_fl_pipeline.py with $round rounds and $client clients"
     mv learning_params.py.bak learning_params.py
     exit 1
     fi
