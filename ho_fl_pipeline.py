@@ -74,16 +74,17 @@ for i in range(NUM_CLIENTS):
     client_labels_int.append(y_client_int)
 
 # ### Draw client data distribution
-# # create a plot with the subplots of the clients and the number of label distributions
+# create a plot with the subplots of the clients and the number of label distributions
 # fig, axs = plt.subplots(1, NUM_CLIENTS, figsize=(10, 5))
 # for i in range(NUM_CLIENTS):
 #     axs[i].hist(client_labels_int[i], bins=10, range=(0, 10), alpha=0.5)
-#     axs[i].set_title(f"Client {i + 1}")
-#     axs[i].set_xlabel("Digit")
-#     axs[i].set_ylabel("Count")
+#     axs[i].set_xlabel("Digit", fontsize=16)
+#     axs[i].set_ylabel("Count", fontsize=16)
+#     axs[i].tick_params(axis='both', which='major', labelsize=14)
+#     axs[i].grid(True, alpha=0.3)
 # plt.tight_layout()
 # plt.savefig(os.path.join('data-plots', 'client_data_distribution.png'))
-# #plt.show()
+# plt.show()
 
 # Function to average weights from multiple models (HO - FedAvg)
 def encrypted_sum(weights_list, model_keys):
